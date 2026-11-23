@@ -44,12 +44,13 @@ A GenAI-powered campus laboratory resource-sharing platform that helps students 
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 15 (App Router, TypeScript `strict: true`)
-- **Validation**: Zod schemas
-- **AI**: Google Gemini 2.5 Flash via `@google/genai`
-- **Storage**: In-memory (default) or Firestore (Cloud Run)
-- **Testing**: Vitest (43 tests)
-- **Deployment**: Docker (Node 20 Alpine, non-root, port 8080)
+- **Framework**: Next.js 16 (App Router, TypeScript `strict: true`)
+- **Styling**: Tailwind CSS v4 (Pure CSS, tactile editorial system, zero bloated UI libraries)
+- **Validation**: Zod 3 schemas on all mutation routes
+- **AI**: Google Gemini 2.5 Flash via `@google/genai` (with deterministic heuristic fallback)
+- **Storage**: In-memory (default) or Firestore (`LabStore` interface)
+- **Testing**: Vitest + Vitest-Axe (47 tests: unit, integration, and WCAG 2.1 AA accessibility)
+- **Deployment**: Vercel / Cloud Run Docker (Node 20 Alpine, non-root, port 8080)
 
 ## 🔧 Setup
 
@@ -66,36 +67,35 @@ cp .env.example .env.local
 # Development
 npm run dev
 
-# Run all checks
+# Run all verification gates
 npm run lint && npx tsc --noEmit && npm test && npm run build
 ```
 
-## 🧪 Testing
+## 🧪 Testing & Verification
 
 ```bash
 npm test
 ```
 
-**43 tests** across 2 test suites:
+**47 automated tests** across 3 test suites:
 - `tests/scheduler.test.ts` — 20 tests (interval overlap, priority scoring, conflict resolution, analytics)
 - `tests/api.test.ts` — 23 tests (validation, store operations, discover fallback, simulation)
+- `tests/a11y.test.tsx` — 4 tests (WCAG 2.1 AA accessibility tests with `vitest-axe` for zero violations)
 
-## 🐳 Docker
+## 🐳 Docker (Cloud Run Ready)
 
 ```bash
 docker build -t lablink .
 docker run -p 8080:8080 -e GEMINI_API_KEY=your_key lablink
 ```
 
-## 🔒 Security
+## 🔒 Security & Performance
 
-- `X-Frame-Options: DENY`
-- `X-Content-Type-Options: nosniff`
-- `Content-Security-Policy` configured
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
-- Per-IP rate limiting on AI and mutation routes
-- Non-root Docker user
+- **Headers**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, strict `Content-Security-Policy`
+- **Rate Limiting**: Sliding window per-IP rate limiter on AI endpoints (10 req/min) and mutations (30 req/min)
+- **Zero Client Mock Data**: All data fetched live from backend REST APIs
+- **Accessibility**: WCAG 2.1 AA compliant, full keyboard navigation (`Escape`, `Tab`, radio groups), high contrast ratios (>7:1 on key text)
+- **Lean Footprint**: Git repository < 1 MB (well below the 10 MB competition limit), exactly one branch (`main`)
 
 ## 📋 Project Structure
 
@@ -106,13 +106,23 @@ src/
 │   │   ├── analytics/route.ts
 │   │   ├── bookings/route.ts
 │   │   ├── bookings/[id]/route.ts
+│   │   ├── demo-login/route.ts
 │   │   ├── discover/route.ts
 │   │   ├── equipment/route.ts
 │   │   ├── health/route.ts
 │   │   └── simulate-conflict/route.ts
+│   ├── globals.css
 │   ├── layout.tsx
 │   └── page.tsx
+├── components/
+│   ├── AdminWorkspace.tsx
+│   ├── BookingPanel.tsx
+│   ├── ConflictSimulatorModal.tsx
+│   ├── FacultyWorkspace.tsx
+│   └── StudentWorkspace.tsx
 ├── lib/
+│   ├── auth.ts            # Role-based cookie helpers
+│   ├── frontendApi.ts     # Client typed API fetchers
 │   ├── gemini.ts          # GenAI engine with fallback
 │   ├── rateLimit.ts       # Per-IP sliding window
 │   ├── scheduler.ts       # Deterministic conflict engine
@@ -121,8 +131,9 @@ src/
 └── types/
     └── lablink.ts         # Domain types
 tests/
-├── scheduler.test.ts      # 20 unit tests
-└── api.test.ts            # 23 integration tests
+├── a11y.test.tsx          # WCAG 2.1 AA accessibility tests
+├── api.test.ts            # Integration & route tests
+└── scheduler.test.ts      # Core scheduling engine tests
 ```
 
 ## License
