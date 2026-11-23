@@ -187,23 +187,15 @@ export default function LabLinkHome() {
             <article className="telemetry-card telemetry-card--violet">
               <svg className="telemetry-svg" viewBox="0 0 320 300" aria-hidden="true">
                 <rect
-                  x="48"
-                  y="96"
-                  width="224"
-                  height="108"
-                  rx="14"
-                  fill="rgba(255,255,255,0.14)"
-                  stroke="rgba(255,255,255,0.45)"
+                  x="24"
+                  y="24"
+                  width="272"
+                  height="252"
+                  rx="16"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.22)"
                   strokeWidth="1.2"
-                />
-                <line
-                  x1="64"
-                  y1="118"
-                  x2="176"
-                  y2="118"
-                  stroke="rgba(255,255,255,0.5)"
-                  strokeWidth="6"
-                  strokeLinecap="round"
+                  strokeDasharray="4 6"
                 />
               </svg>
               <div className="telemetry-top">
@@ -213,13 +205,45 @@ export default function LabLinkHome() {
                   Deterministic Conflict Solver
                 </p>
               </div>
-              <div className="telemetry-value font-dot">
-                40/30
-                <span className="telemetry-unit">/30</span>
+              <div className="telemetry-glass-box">
+                <div
+                  className="telemetry-value font-dot"
+                  style={{ margin: '0 0 4px', fontSize: 'clamp(28px, 3.2vw, 38px)' }}
+                >
+                  40/30
+                  <span className="telemetry-unit" style={{ fontSize: '18px' }}>/30</span>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 3,
+                    width: '100%',
+                    maxWidth: '170px',
+                    height: 4,
+                    borderRadius: 999,
+                    overflow: 'hidden',
+                    margin: '6px 0 10px',
+                    background: 'rgba(255, 255, 255, 0.25)',
+                  }}
+                  aria-hidden="true"
+                >
+                  <div style={{ width: '40%', background: '#fb7185' }} />
+                  <div style={{ width: '30%', background: '#c084fc' }} />
+                  <div style={{ width: '30%', background: '#fdba74' }} />
+                </div>
+                <p
+                  className="telemetry-sub"
+                  style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    lineHeight: 1.4,
+                    maxWidth: '24ch',
+                    color: 'rgba(255, 255, 255, 0.95)',
+                  }}
+                >
+                  Urgency, spec fit &amp; anti-hoarding priority scoring
+                </p>
               </div>
-              <p className="telemetry-sub">
-                Urgency, spec fit &amp; anti-hoarding priority scoring
-              </p>
               <button
                 type="button"
                 className="telemetry-pill"
