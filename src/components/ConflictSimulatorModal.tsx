@@ -70,9 +70,9 @@ export function ConflictSimulatorModal({ open, loading, data, error, onClose }: 
             </p>
 
             <div style={{ display: 'grid', gap: 14 }}>
-              {data.entries.map((entry) => (
+              {data.entries.map((entry, idx) => (
                 <div
-                  key={`${entry.studentName}-${entry.projectTitle}`}
+                  key={`${entry.studentName}-${entry.projectTitle}-${idx}`}
                   style={{
                     border: '1px solid var(--border)',
                     borderRadius: 14,

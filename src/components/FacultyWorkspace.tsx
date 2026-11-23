@@ -71,12 +71,12 @@ export function FacultyWorkspace({ facultyDepartment, bookings, equipment, onRef
             </tr>
           </thead>
           <tbody>
-            {bookings.map((b) => {
+            {bookings.map((b, idx) => {
               const eq = eqById.get(b.equipmentId);
               const dept = b.equipmentDepartment ?? eq?.department ?? 'Robotics';
               const inScope = dept === facultyDepartment;
               return (
-                <tr key={b.id}>
+                <tr key={b.id || `booking-${idx}`}>
                   <td>
                     <strong>{b.projectTitle}</strong>
                     <div style={{ fontSize: 13, color: 'var(--ink-muted)' }}>

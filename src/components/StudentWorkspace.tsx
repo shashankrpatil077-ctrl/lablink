@@ -142,8 +142,8 @@ export function StudentWorkspace({ equipment, bookings, onRefresh }: Props) {
               <span className="badge badge-ok">
                 {discoverResult.items.length} cross-department matches
               </span>
-              {discoverResult.extractedCapabilities.map((cap) => (
-                <span key={cap} className="badge badge-dept font-mono">
+              {discoverResult.extractedCapabilities.map((cap, capIdx) => (
+                <span key={`${cap}-${capIdx}`} className="badge badge-dept font-mono">
                   #{cap}
                 </span>
               ))}
@@ -187,11 +187,11 @@ export function StudentWorkspace({ equipment, bookings, onRefresh }: Props) {
 
       <div className="catalog-layout">
         <div className="kit-grid" aria-label="Laboratory equipment catalog">
-          {filtered.map((kit) => {
+          {filtered.map((kit, idx) => {
             const isSelected = selectedEquipment?.id === kit.id;
             return (
               <article
-                key={kit.id}
+                key={kit.id || `kit-${idx}`}
                 className={`kit-card ${isSelected ? 'kit-card--selected' : ''}`}
               >
                 <div>
@@ -223,8 +223,8 @@ export function StudentWorkspace({ equipment, bookings, onRefresh }: Props) {
                     </p>
                   )}
                   <div className="chip-row" style={{ marginTop: 10 }}>
-                    {kit.capabilities.slice(0, 4).map((c) => (
-                      <span key={c} className="badge badge-dept font-mono" style={{ fontSize: 11 }}>
+                    {kit.capabilities.slice(0, 4).map((c, cIdx) => (
+                      <span key={`${kit.id || idx}-${c}-${cIdx}`} className="badge badge-dept font-mono" style={{ fontSize: 11 }}>
                         {c}
                       </span>
                     ))}

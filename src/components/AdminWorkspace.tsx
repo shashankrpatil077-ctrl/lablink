@@ -52,7 +52,7 @@ export function AdminWorkspace({ analytics }: Props) {
         </h2>
         <div style={{ display: 'grid', gap: 14 }}>
           {analytics.departmentUtilization.map((row, idx) => (
-            <div key={row.department}>
+            <div key={row.department || `dept-${idx}`}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 4 }}>
                 <strong>{row.department}</strong>
                 <span className="font-mono">{row.utilizationPct}%</span>
@@ -61,7 +61,7 @@ export function AdminWorkspace({ analytics }: Props) {
                 <div
                   style={{
                     height: '100%',
-                    width: `${Math.min(100, row.utilizationPct)}%`,
+                    width: `${Math.min(100, Math.max(0, row.utilizationPct))}%`,
                     background: barColors[idx % barColors.length],
                   }}
                 />
@@ -86,15 +86,15 @@ export function AdminWorkspace({ analytics }: Props) {
               </tr>
             </thead>
             <tbody>
-              {analytics.underutilizedKits.map((kit) => (
-                <tr key={kit.id}>
+              {analytics.underutilizedKits.map((kit, idx) => (
+                <tr key={kit.id || `underutilized-${idx}`}>
                   <td><strong>{kit.name}</strong></td>
                   <td>{kit.department}</td>
                   <td className="font-mono">{kit.utilizationPct}%</td>
                   <td>
                     <div className="chip-row" style={{ marginTop: 0 }}>
-                      {kit.capabilities.map((c) => (
-                        <span key={c} className="badge badge-dept font-mono" style={{ fontSize: 11.5 }}>
+                      {kit.capabilities.map((c, cIdx) => (
+                        <span key={`${kit.id || idx}-${c}-${cIdx}`} className="badge badge-dept font-mono" style={{ fontSize: 11.5 }}>
                           {c}
                         </span>
                       ))}

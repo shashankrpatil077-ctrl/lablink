@@ -187,7 +187,7 @@ export async function fetchEquipment(filters?: {
       specs: String(r.specs ?? ''),
       capabilities: Array.isArray(r.capabilities) ? r.capabilities.map(String) : [],
       approvalPolicy: (String(r.approvalPolicy ?? 'auto') as ApprovalPolicyType),
-      utilizationPct: Number(r.utilizationPct ?? 45),
+      utilizationPct: Number(r.utilizationPercent ?? r.utilizationPct ?? 45),
       maintenanceWindows: Array.isArray(r.maintenanceWindows)
         ? (r.maintenanceWindows as Array<{ startIso: string; endIso: string; reason: string }>)
         : [],
@@ -334,13 +334,19 @@ export async function runConflictSimulation(): Promise<UISimulationResult> {
     ranked.length > 0
       ? ranked.map((item, idx) => {
           const r = asRecord(item);
-          const bd = asRecord(r.scoreBreakdown);
+          const b = r.booking ? asRecord(r.booking) : r;
+          const alloc = r.allocation ? asRecord(r.allocation) : r;
+          const bd = asRecord(alloc.scoreBreakdown ?? b.scoreBreakdown ?? r.scoreBreakdown);
           return {
             label: idx === 0 ? 'Primary Allocation' : `Contender #${idx + 1}`,
-            studentName: String(r.studentName ?? `Team ${idx + 1}`),
-            projectTitle: String(r.projectTitle ?? 'Campus Project'),
-            deadlineLabel: r.deadlineIso ? formatIST(String(r.deadlineIso)) : 'Upcoming',
-            priorityScore: Number(r.priorityScore ?? 80 - idx * 20),
+            studentName: String(b.studentName ?? r.studentName ?? `Team ${idx + 1}`),
+            projectTitle: String(b.projectTitle ?? r.projectTitle ?? 'Campus Project'),
+            deadlineLabel: b.deadlineIso
+              ? formatIST(String(b.deadlineIso))
+              : r.deadlineIso
+                ? formatIST(String(r.deadlineIso))
+                : 'Upcoming',
+            priorityScore: Number(b.priorityScore ?? alloc.priorityScore ?? r.priorityScore ?? 80 - idx * 20),
             scoreBreakdown: {
               deadlineUrgency: Number(bd.deadlineUrgency ?? 32 - idx * 10),
               specFit: Number(bd.specFit ?? 25 - idx * 3),
@@ -379,16 +385,25 @@ export async function runConflictSimulation(): Promise<UISimulationResult> {
           },
         ];
 
+  const targetEq = raw.targetEquipment ? asRecord(raw.targetEquipment) : {};
+  const firstEntry = ranked[0] ? asRecord(ranked[0]) : null;
+  const firstAlloc = firstEntry?.allocation ? asRecord(firstEntry.allocation) : null;
+  const rawAlternatives = Array.isArray(raw.alternatives)
+    ? raw.alternatives
+    : Array.isArray(firstAlloc?.alternatives)
+      ? firstAlloc.alternatives
+      : [];
+
   return {
-    equipmentName: String(raw.equipmentName ?? 'NVIDIA Jetson Orin AGX Dev Kit'),
-    department: String(raw.department ?? 'Robotics'),
+    equipmentName: String(targetEq.name ?? raw.equipmentName ?? 'NVIDIA Jetson Orin AGX Dev Kit'),
+    department: String(targetEq.department ?? raw.department ?? 'Robotics'),
     slotLabel: String(raw.slotLabel ?? 'Today · 10:00 AM – 12:00 PM IST'),
     entries,
-    alternatives: Array.isArray(raw.alternatives)
-      ? (raw.alternatives as UIAlternative[])
-      : [],
+    alternatives: rawAlternatives as UIAlternative[],
     aiExplanation: String(
       raw.aiExplanation ??
+        firstEntry?.aiExplanation ??
+        firstAlloc?.aiExplanation ??
         'Senior Capstone won the primary slot due to its 36-hour deadline and zero prior bookings. Contender #2 is offered an equivalent cross-department GPU kit.'
     ),
   };
@@ -409,27 +424,38 @@ export async function fetchAnalytics(): Promise<UIAnalytics> {
       ? raw.underutilizedEquipment
       : [];
   return {
-    campusUtilizationPct: Number(raw.campusUtilizationPct ?? raw.overallUtilizationPct ?? 64),
-    activeBookings: Number(raw.activeBookings ?? raw.totalBookings ?? 4),
-    activeWaitlist: Number(raw.activeWaitlist ?? raw.waitlistCount ?? 1),
+    campusUtilizationPct: Number(
+      raw.campusUtilizationPercent ?? raw.campusUtilizationPct ?? raw.overallUtilizationPct ?? 64
+    ),
+    activeBookings: Number(
+      raw.activeBookingsCount ?? raw.activeBookings ?? raw.totalBookings ?? 4
+    ),
+    activeWaitlist: Number(
+      raw.activeWaitlistCount ?? raw.activeWaitlist ?? raw.waitlistCount ?? 1
+    ),
     underutilizedCount: under.length,
     departmentUtilization: depts.map((d) => {
       const r = asRecord(d);
       return {
         department: String(r.department ?? 'Lab'),
-        utilizationPct: Number(r.utilizationPct ?? r.utilization ?? 50),
+        utilizationPct: Number(r.utilizationPercent ?? r.utilizationPct ?? r.utilization ?? 50),
       };
     }),
-    peakWindows: Array.isArray(raw.peakWindows)
-      ? raw.peakWindows.map(String)
-      : ['10:00 AM – 12:00 PM IST', '02:00 PM – 04:00 PM IST'],
-    underutilizedKits: under.map((k) => {
+    peakWindows: Array.isArray(raw.peakContentionWindows)
+      ? raw.peakContentionWindows.map((w) => {
+          const rw = asRecord(w);
+          return `${formatIST(String(rw.windowStartIso))} – ${formatIST(String(rw.windowEndIso))}`;
+        })
+      : Array.isArray(raw.peakWindows)
+        ? raw.peakWindows.map(String)
+        : ['10:00 AM – 12:00 PM IST', '02:00 PM – 04:00 PM IST'],
+    underutilizedKits: under.map((k, idx) => {
       const r = asRecord(k);
       return {
-        id: String(r.id ?? ''),
-        name: String(r.name ?? 'Lab Kit'),
+        id: String(r.equipmentId ?? r.id ?? `underutilized-${idx}`),
+        name: String(r.equipmentName ?? r.name ?? 'Lab Kit'),
         department: String(r.department ?? 'ECE'),
-        utilizationPct: Number(r.utilizationPct ?? 22),
+        utilizationPct: Number(r.utilizationPercent ?? r.utilizationPct ?? 22),
         capabilities: Array.isArray(r.capabilities) ? r.capabilities.map(String) : [],
       };
     }),

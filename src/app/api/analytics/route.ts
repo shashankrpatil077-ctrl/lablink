@@ -17,8 +17,15 @@ export async function GET(): Promise<NextResponse> {
     const waitlist = await store.getAllWaitlist();
 
     const report = computeUtilizationAnalytics(allEquipment, allBookings, waitlist);
+    const activeBookings = allBookings.filter(
+      (b) => b.status === 'approved' || b.status === 'pending_faculty'
+    );
 
-    return NextResponse.json(report);
+    return NextResponse.json({
+      ...report,
+      activeBookingsCount: activeBookings.length,
+      totalBookingsCount: allBookings.length,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
