@@ -3,14 +3,11 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { axe } from 'vitest-axe';
-import * as matchers from 'vitest-axe/matchers';
 import { StudentWorkspace } from '@/components/StudentWorkspace';
 import { FacultyWorkspace } from '@/components/FacultyWorkspace';
 import { AdminWorkspace } from '@/components/AdminWorkspace';
 import { ConflictSimulatorModal } from '@/components/ConflictSimulatorModal';
 import type { UIAnalytics, UIBooking, UIEquipment, UISimulationResult } from '@/lib/frontendApi';
-
-expect.extend(matchers);
 
 const MOCK_EQUIPMENT: UIEquipment[] = [
   {
@@ -101,8 +98,8 @@ describe('LabLink WCAG 2.1 AA Accessibility Suite', () => {
       />
     );
     expect(screen.getByRole('radiogroup', { name: /Select Time Slot/i })).toBeTruthy();
-    // @ts-expect-error: matcher type not recognized
-    expect(await axe(container)).toHaveNoViolations();
+    const { violations } = await axe(container);
+    expect(violations).toEqual([]);
   });
 
   it('FacultyWorkspace has zero axe violations', async () => {
@@ -114,14 +111,14 @@ describe('LabLink WCAG 2.1 AA Accessibility Suite', () => {
         onRefresh={vi.fn()}
       />
     );
-    // @ts-expect-error: matcher type not recognized
-expect(await axe(container)).toHaveNoViolations();
+    const { violations } = await axe(container);
+    expect(violations).toEqual([]);
   });
 
   it('AdminWorkspace has zero axe violations', async () => {
     const { container } = render(<AdminWorkspace analytics={MOCK_ANALYTICS} />);
-    // @ts-expect-error: matcher type not recognized
-expect(await axe(container)).toHaveNoViolations();
+    const { violations } = await axe(container);
+    expect(violations).toEqual([]);
   });
 
   it('ConflictSimulatorModal has zero axe violations', async () => {
@@ -134,7 +131,7 @@ expect(await axe(container)).toHaveNoViolations();
         onClose={vi.fn()}
       />
     );
-    // @ts-expect-error: matcher type not recognized
-expect(await axe(container)).toHaveNoViolations();
+    const { violations } = await axe(container);
+    expect(violations).toEqual([]);
   });
 });

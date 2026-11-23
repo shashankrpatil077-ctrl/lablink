@@ -2,9 +2,19 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LabLink — Intelligent Campus Laboratory Resource Sharing',
+  title: 'LabLink — Making College Laboratories More Accessible',
   description:
-    'GenAI-powered cross-department laboratory equipment discovery, accessible slot booking, faculty approvals, and fair deterministic conflict resolution.',
+    'GenAI-powered campus laboratory resource-sharing platform that helps students discover and access specialised equipment, development kits, and laboratory workstations across departments with intelligent slot booking, faculty approvals, and fair scheduling conflict resolution.',
+  keywords: [
+    'campus laboratory resource-sharing',
+    'equipment discovery',
+    'intelligent slot booking',
+    'project-based access requests',
+    'faculty approvals',
+    'optimising resource utilisation',
+    'scheduling conflicts',
+    'fair equipment allocations',
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -204,11 +204,25 @@ function explainFallback(
   }
 }
 
+// ─── High-Efficiency Discovery Cache ──────────────────────────────────────────
+
+interface CachedDiscovery {
+  extractedCapabilities: string[];
+  urgencyLevel: string;
+  recommendedIds: string[];
+  reasonsById: Record<string, string>;
+  cachedAt: number;
+}
+
+const DISCOVERY_CACHE = new Map<string, CachedDiscovery>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute cache for fast, resource-lean repeat queries
+
 // ─── Main GenAI Functions ─────────────────────────────────────────────────────
 
 /**
  * Discovers equipment matching a natural-language student project query.
- * Uses Gemini with structured JSON output, falls back to keyword matching.
+ * Uses in-memory caching for peak resource efficiency, Gemini with structured JSON output,
+ * and falls back to deterministic keyword matching.
  *
  * @param query - Natural-language query from a student
  * @param catalog - Full equipment catalog
@@ -223,8 +237,21 @@ export async function discoverEquipmentWithAI(
   recommendedIds: string[];
   reasonsById: Record<string, string>;
 }> {
+  const cacheKey = query.trim().toLowerCase();
+  const cached = DISCOVERY_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
+    return {
+      extractedCapabilities: cached.extractedCapabilities,
+      urgencyLevel: cached.urgencyLevel,
+      recommendedIds: cached.recommendedIds,
+      reasonsById: cached.reasonsById,
+    };
+  }
+
   if (!isAIConfigured()) {
-    return discoverFallback(query, catalog);
+    const fallbackResult = discoverFallback(query, catalog);
+    DISCOVERY_CACHE.set(cacheKey, { ...fallbackResult, cachedAt: Date.now() });
+    return fallbackResult;
   }
 
   try {
@@ -269,15 +296,20 @@ Return equipment ranked by relevance to the student's needs. Prioritize cross-de
       reasonsById: Record<string, string>;
     };
 
-    return {
+    const result = {
       extractedCapabilities: parsed.extractedCapabilities ?? [],
       urgencyLevel: parsed.urgencyLevel ?? 'medium',
       recommendedIds: parsed.recommendedIds ?? [],
       reasonsById: parsed.reasonsById ?? {},
     };
+
+    DISCOVERY_CACHE.set(cacheKey, { ...result, cachedAt: Date.now() });
+    return result;
   } catch {
     // Fallback on any error (rate limit, timeout, invalid key, etc.)
-    return discoverFallback(query, catalog);
+    const fallbackResult = discoverFallback(query, catalog);
+    DISCOVERY_CACHE.set(cacheKey, { ...fallbackResult, cachedAt: Date.now() });
+    return fallbackResult;
   }
 }
 

@@ -1,6 +1,22 @@
 # LabLink — Making College Laboratories More Accessible
 
-A GenAI-powered campus laboratory resource-sharing platform that helps students discover and access specialised equipment, development kits, and laboratory workstations across departments.
+> **Build with AI × PromptWars Hackathon Challenge Solution**  
+> An intelligent, GenAI-powered campus laboratory resource-sharing platform that helps students discover and access specialised equipment, development kits, and laboratory workstations across departments.
+
+---
+
+## 🎯 Problem Statement Alignment Matrix
+
+| Challenge Objective | Platform Feature | Technical Implementation | Automated Test Coverage |
+|---|---|---|---|
+| **Cross-Department Discovery** | Natural language hardware search across 5 departments (Robotics, ECE, CSE, Mech, Biotech) | Google Gemini 2.5 Flash + high-speed in-memory TTL caching + deterministic keyword fallback | `tests/api.test.ts` (discovery, keyword parsing) |
+| **Intelligent Slot Booking** | Conflict-aware reservation with native 2-hour IST slot picker | Sweep-line interval overlap detector with duration bounds (max 8h) | `tests/scheduler.test.ts` (overlapping slots) |
+| **Project-Based Access Requests** | Capstone/research request intake with hardware spec requirements | Zod validation with deadline, team size, abstract & capability binding | `tests/api.test.ts` (booking validation) |
+| **Faculty Approvals (RBAC)** | Scope-isolated department faculty review & approval workflows | Signed HTTP cookie RBAC + 3-tier policies (`auto`, `trained_only`, `manual`) | `tests/api.test.ts` (faculty decisions) |
+| **Optimising Resource Utilisation** | Live campus telemetry & underutilized equipment flagging | Campus-wide & department capacity math + idle-kit sharing alerts (<35%) | `tests/scheduler.test.ts` (utilization analytics) |
+| **Fair Scheduling Conflict Resolution** | Mathematical conflict arbitration with feasible alternatives | 40% Deadline Urgency + 30% Spec Fit + 30% Anti-Hoarding Fairness + cross-dept alt kits | `tests/scheduler.test.ts` (priority scoring & alternatives) |
+
+---
 
 ## 🚀 Features
 
